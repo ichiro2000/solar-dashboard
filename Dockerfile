@@ -42,5 +42,7 @@ RUN pnpm prune --prod
 
 EXPOSE 3000
 
-# Run pending migrations on boot, then launch Next.
-CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm next start -H 0.0.0.0"]
+# Apply schema on boot (prisma db push is idempotent and works without
+# a migration history, so we don't need separate migrations per provider).
+# Then launch Next.
+CMD ["sh", "-c", "pnpm prisma db push --skip-generate --accept-data-loss && pnpm next start -H 0.0.0.0"]
