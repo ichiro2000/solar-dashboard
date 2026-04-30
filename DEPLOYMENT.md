@@ -65,7 +65,7 @@ $(cat .do/app.yaml)
   - name: web
     envs:
       - key: SEMS_ACCOUNT
-        value: sadeepa25@gmail.com
+        value: '<your goodwe email>'
         type: SECRET
         scope: RUN_TIME
       - key: SEMS_PASSWORD
