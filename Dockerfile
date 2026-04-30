@@ -42,7 +42,8 @@ RUN pnpm prune --prod
 
 EXPOSE 3000
 
-# Apply schema on boot (prisma db push is idempotent and works without
-# a migration history, so we don't need separate migrations per provider).
-# Then launch Next.
-CMD ["sh", "-c", "pnpm prisma db push --skip-generate --accept-data-loss && pnpm next start -H 0.0.0.0"]
+RUN chmod +x scripts/start.sh
+
+# Apply schema on boot (idempotent) into a dedicated `app` schema (avoids
+# Postgres 15+ public-schema permission issues on managed DBs), then launch.
+CMD ["./scripts/start.sh"]
