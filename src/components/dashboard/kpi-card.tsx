@@ -74,15 +74,15 @@ export function KpiCard({
         ) : (
           <div className="flex items-baseline gap-1.5">
             {mounted ? (
-              <motion.span className="text-3xl font-semibold tabular-nums tracking-tight">
+              <motion.span className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl">
                 {display}
               </motion.span>
             ) : (
-              <span className="text-3xl font-semibold tabular-nums tracking-tight">
+              <span className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl">
                 {safeValue.toFixed(fractionDigits)}
               </span>
             )}
-            <span className="text-sm font-medium text-muted-foreground">{unit}</span>
+            <span className="text-xs font-medium text-muted-foreground sm:text-sm">{unit}</span>
           </div>
         )}
         {hint && <p className="mt-2 text-xs text-muted-foreground">{hint}</p>}

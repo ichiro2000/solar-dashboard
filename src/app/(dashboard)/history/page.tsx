@@ -3,6 +3,7 @@ import { ExportButton } from "@/components/dashboard/export-button";
 import { PowerChart } from "@/components/dashboard/power-chart";
 import { RangePicker } from "@/components/dashboard/range-picker";
 import { Header } from "@/components/layout/header";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { getSolarAdapter } from "@/lib/solar/adapter";
 import { historyRepository } from "@/lib/solar/repository";
 import type { HistoryRange } from "@/lib/solar/types";
@@ -42,16 +43,17 @@ export default async function HistoryPage({
         status={overview?.plant.status}
         lastUpdated={overview?.lastUpdated}
       />
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-3 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <RangePicker current={range} />
           <ExportButton range={range} />
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
           <PowerChart points={points} loading={false} />
           <ConsumptionVsProductionChart points={points} loading={false} />
         </div>
       </div>
+      <MobileNav current="history" />
     </div>
   );
 }

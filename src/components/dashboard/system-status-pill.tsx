@@ -18,12 +18,12 @@ export function SystemStatusPill({
 }) {
   const c = COPY[status ?? "offline"];
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 sm:gap-3">
       <Badge className={cn("gap-2 text-xs font-medium", c.tone)} variant="outline">
         <span className={cn("size-1.5 rounded-full", c.dot)} />
         {c.label}
       </Badge>
-      <span className="text-xs text-muted-foreground tabular-nums">
+      <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
         Updated {lastUpdated ? formatRelative(lastUpdated) : "—"}
       </span>
     </div>

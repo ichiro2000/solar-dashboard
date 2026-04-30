@@ -1,68 +1,46 @@
 # syntax=docker/dockerfile:1.6
 #
-# Multi-stage build for Next.js 14 standalone output, deployed via DO App
-# Platform's "dockerfile" build path.
-#
-# Uses Debian-slim instead of Alpine because Prisma's prebuilt query engine
-# expects glibc + a specific libssl version that Alpine doesn't ship by
-# default.
+# Build & runtime container for Next.js 14 + Prisma + Postgres on
+# DigitalOcean App Platform. Single-stage to keep pnpm's symlinked
+# node_modules intact at runtime — Prisma's prebuilt query engine
+# resolves through that path.
 
-ARG NODE_VERSION=20
-
-# ---- deps ------------------------------------------------------------------
-FROM node:${NODE_VERSION}-bookworm-slim AS deps
-WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-RUN corepack enable
-
-COPY package.json pnpm-lock.yaml ./
-COPY prisma ./prisma
-RUN pnpm install --frozen-lockfile --ignore-scripts
-
-# ---- builder ---------------------------------------------------------------
-FROM node:${NODE_VERSION}-bookworm-slim AS builder
-WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-RUN corepack enable
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-# Switch the schema to Postgres for the production build.
-RUN cp prisma/schema.postgres.prisma prisma/schema.prisma
-
-# DATABASE_URL placeholder for `prisma generate`. Real value injected at
-# runtime by DO App Platform via ${db.DATABASE_URL}.
-ENV DATABASE_URL="postgres://placeholder@localhost:5432/placeholder?schema=public"
-
-RUN pnpm prisma generate
-RUN pnpm next build
-
-# ---- runner ----------------------------------------------------------------
-FROM node:${NODE_VERSION}-bookworm-slim AS runner
+FROM node:20-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssl ca-certificates \
  && rm -rf /var/lib/apt/lists/*
-RUN groupadd --system --gid 1001 nodejs \
- && useradd --system --uid 1001 --gid nodejs --no-create-home nextjs
+RUN corepack enable
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+# Install all deps (incl. dev) so we can build, and so the Prisma engine
+# is available at runtime.
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-USER nextjs
+# Switch to the Postgres schema before generate.
+RUN cp prisma/schema.postgres.prisma prisma/schema.prisma
+
+# DATABASE_URL placeholder for `prisma generate`. Real value is injected at
+# runtime by DO App Platform via ${db.DATABASE_URL}.
+ENV DATABASE_URL="postgres://placeholder@localhost:5432/placeholder?schema=public"
+
+RUN pnpm prisma generate
+
+COPY . .
+# Re-apply schema swap (the COPY . . above just overwrote it)
+RUN cp prisma/schema.postgres.prisma prisma/schema.prisma
+RUN pnpm next build
+
+# Drop dev deps to slim the image; Prisma engine + runtime deps stay.
+RUN pnpm prune --prod
+
 EXPOSE 3000
 
-# Apply pending migrations on boot, then launch the standalone server.
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node server.js"]
+# Run pending migrations on boot, then launch Next.
+CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm next start -H 0.0.0.0"]

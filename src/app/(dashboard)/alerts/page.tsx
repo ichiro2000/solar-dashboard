@@ -1,5 +1,6 @@
 import { AlertList } from "@/components/dashboard/alert-list";
 import { Header } from "@/components/layout/header";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { getSolarAdapter } from "@/lib/solar/adapter";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +24,10 @@ export default async function AlertsPage() {
         status={overview?.plant.status}
         lastUpdated={overview?.lastUpdated}
       />
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         <AlertList alerts={alerts} loading={false} />
       </div>
+      <MobileNav current="alerts" alertCount={alerts.filter((a) => !a.resolvedAt).length} />
     </div>
   );
 }

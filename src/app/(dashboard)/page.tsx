@@ -10,6 +10,7 @@ import { LifetimeStats } from "@/components/dashboard/lifetime-stats";
 import { PowerChart } from "@/components/dashboard/power-chart";
 import { WeatherCard } from "@/components/dashboard/weather-card";
 import { Header } from "@/components/layout/header";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { historyRepository } from "@/lib/solar/repository";
 import { getSolarAdapter } from "@/lib/solar/adapter";
 import { logger } from "@/lib/logger";
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
         lastUpdated={overview?.lastUpdated}
         autoRefreshSec={60}
       />
-      <div className="grid gap-4 p-6 lg:grid-cols-12">
+      <div className="grid grid-cols-2 gap-3 p-3 sm:p-6 sm:gap-4 lg:grid-cols-12">
         <div className="lg:col-span-3">
           <KpiCard
             label="Current Power"
@@ -125,10 +126,10 @@ export default async function DashboardPage() {
           />
         </div>
 
-        <div className="lg:col-span-8">
+        <div className="col-span-2 lg:col-span-8">
           <EnergyFlowDiagram data={realtime ?? undefined} loading={realtime === null} />
         </div>
-        <div className="lg:col-span-4">
+        <div className="col-span-2 lg:col-span-4">
           <BatteryGauge
             socPct={realtime?.battery.socPct}
             powerKw={realtime?.battery.powerKw}
@@ -137,16 +138,16 @@ export default async function DashboardPage() {
           />
         </div>
 
-        <div className="lg:col-span-8">
+        <div className="col-span-2 lg:col-span-8">
           <PowerChart points={history} loading={false} />
         </div>
-        <div className="lg:col-span-4">
+        <div className="col-span-2 lg:col-span-4">
           <AlertList alerts={alerts} loading={false} />
         </div>
 
         {overview && (
           <>
-            <div className="lg:col-span-4">
+            <div className="col-span-2 lg:col-span-4">
               <LifetimeStats
                 totalYieldKwh={overview.totalYieldKwh}
                 monthYieldKwh={overview.monthYieldKwh}
@@ -154,7 +155,7 @@ export default async function DashboardPage() {
                 capacityKw={overview.plant.capacityKw}
               />
             </div>
-            <div className="lg:col-span-4">
+            <div className="col-span-2 lg:col-span-4">
               <EnvironmentalImpact
                 co2Kg={overview.co2OffsetKg}
                 trees={overview.treesEquivalent}
@@ -162,7 +163,7 @@ export default async function DashboardPage() {
               />
             </div>
             {overview.weather ? (
-              <div className="lg:col-span-4">
+              <div className="col-span-2 lg:col-span-4">
                 <WeatherCard
                   description={overview.weather.description}
                   temperatureC={overview.weather.temperatureC}
@@ -173,7 +174,7 @@ export default async function DashboardPage() {
                 />
               </div>
             ) : (
-              <div className="lg:col-span-4">
+              <div className="col-span-2 lg:col-span-4">
                 <InverterInfo
                   sn={overview.inverter?.sn}
                   model={overview.inverter?.model}
@@ -186,7 +187,7 @@ export default async function DashboardPage() {
               </div>
             )}
             {overview.weather && overview.inverter && (
-              <div className="lg:col-span-12">
+              <div className="col-span-2 lg:col-span-12">
                 <InverterInfo
                   sn={overview.inverter.sn}
                   model={overview.inverter.model}
@@ -201,6 +202,7 @@ export default async function DashboardPage() {
           </>
         )}
       </div>
+      <MobileNav current="overview" alertCount={alerts.filter((a) => !a.resolvedAt).length} />
     </div>
   );
 }

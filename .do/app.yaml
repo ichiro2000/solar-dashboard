@@ -15,12 +15,9 @@ services:
   - name: web
     dockerfile_path: Dockerfile
     source_dir: /
-    github:
-      # Replace <YOUR-GH-USERNAME> with your GitHub login after first push.
-      # Or use `doctl apps create --spec .do/app.yaml` after editing this in.
-      repo: ichiro2000/solar-dashboard
+    git:
+      repo_clone_url: https://github.com/ichiro2000/solar-dashboard.git
       branch: main
-      deploy_on_push: true
 
     instance_size_slug: basic-xxs   # ~$5/month, smallest tier
     instance_count: 1
