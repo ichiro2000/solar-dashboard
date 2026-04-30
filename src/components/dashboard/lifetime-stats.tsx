@@ -48,7 +48,7 @@ export function LifetimeStats({ totalYieldKwh, monthYieldKwh, income, capacityKw
             <>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Today's income
+                  Today&apos;s income
                 </div>
                 <div className="mt-1 text-sm font-medium tabular-nums">
                   {fmtMoney(income.today, income.currency)}
